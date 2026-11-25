@@ -1,4 +1,64 @@
+# AWS SAM
 .aws-sam/
-node_modules/
-leads.json
+samconfig.toml.backup
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+env/
+
+# Playwright
+.playwright-mcp/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+template.yaml.backup
+
+# Environment variables
+.env
+.env.local
+
+# Kiro specs (optional - remove if you want to track them)
+.kiro/specs/
+
+# Task implementation documents (generated)
+TASK*_IMPLEMENTATION.md
+TASK*_COMPLETE.md
+TASK*_VERIFICATION.md
