@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Revisión de secretos y datos personales al guardar",
+      "description": "Hook de tipo command: corre un script local, no consume créditos de Kiro.",
+      "trigger": "PostFileSave",
+      "matcher": "\\.(mjs|js|html|ya?ml|json)$",
+      "action": {
+        "type": "command",
+        "command": "bash scripts/check-secrets.sh"
+      },
+      "timeout": 20
+    }
+  ]
+}

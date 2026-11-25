@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Actualizar tests al guardar lógica de validación",
+      "description": "Hook de tipo agent: SÍ consume créditos en cada disparo. Viene apagado; actívalo en vivo solo una vez para mostrarlo.",
+      "trigger": "PostFileSave",
+      "matcher": "src/validation\\.mjs$",
+      "enabled": false,
+      "action": {
+        "type": "agent",
+        "prompt": "Se acaba de guardar src/validation.mjs. Revisa si src/validation.test.mjs cubre todas las reglas de validación. Agrega solo los casos que falten, usando node --test, y no modifiques otros archivos."
+      }
+    }
+  ]
+}
