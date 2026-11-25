@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Kiro Live Board - Serverless event registration system with real-time dashboard
+  
+  SAM template for deploying Lambda function, DynamoDB table, and API Gateway HTTP API
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: python3.12
+
+Resources:
+  # DynamoDB Table for storing attendee registrations
+  AttendeesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: KiroLiveBoardAttendees
+      # Attribute definitions for primary key and GSI
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: gsiPK
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      # Primary key: email (partition key)
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      # Global Secondary Index for querying recent attendees by timestamp
+      GlobalSecondaryIndexes:
+        - IndexName: TimestampIndex
+          KeySchema:
+            - AttributeName: gsiPK
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      # On-demand billing for automatic scaling during event spikes
+      BillingMode: PAY_PER_REQUEST
+
+  # Lambda Function for handling registration and board data requests
+  RegistrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Description: Handles attendee registration and live board data aggregation
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref AttendeesTable
+          GSI_NAME: TimestampIndex
+      Policies:
+        # Grant DynamoDB permissions for the attendees table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AttendeesTable
+      Events:
+        # POST /register endpoint for attendee registration
+        RegisterPost:
+          Type: HttpApi
+          Properties:
+            Path: /register
+            Method: POST
+            ApiId: !Ref HttpApi
+        # GET /board endpoint for live dashboard data
+        BoardGet:
+          Type: HttpApi
+          Properties:
+            Path: /board
+            Method: GET
+            ApiId: !Ref HttpApi
+
+  # CloudWatch Logs Group for API Gateway access logs
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${AWS::StackName}-HttpApi"
+      RetentionInDays: 7
+
+  # HTTP API Gateway for REST interface
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Description: HTTP API for Kiro Live Board registration and dashboard
+      # CORS configuration to allow frontend requests
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+        MaxAge: 86400
+      # Access logging configuration
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '$context.requestId $context.error.message $context.error.messageString $context.httpMethod $context.routeKey $context.status $context.requestTime'
+
+Outputs:
+  # API Gateway endpoint URL for frontend integration
+  ApiUrl:
+    Description: HTTP API endpoint URL for registration and board endpoints
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  
+  # DynamoDB table name for reference
+  TableName:
+    Description: DynamoDB table name for attendees
+    Value: !Ref AttendeesTable
+  
+  # Lambda function ARN for debugging and monitoring
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt RegistrationFunction.Arn
+  
+  # CloudWatch Log Group for API access logs
+  ApiLogGroupName:
+    Description: CloudWatch Log Group for API Gateway access logs
+    Value: !Ref ApiLogGroup

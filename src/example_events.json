@@ -1,0 +1,29 @@
+{
+  "register_valid": {
+    "routeKey": "POST /register",
+    "body": "{\"name\": \"Juan Pérez García\", \"email\": \"juan.perez@company.com\", \"company\": \"Acme Corp\", \"role\": \"Software Engineer\", \"interest\": \"AI & Machine Learning\", \"consent\": true}"
+  },
+  "register_duplicate": {
+    "routeKey": "POST /register",
+    "body": "{\"name\": \"María López\", \"email\": \"juan.perez@company.com\", \"company\": \"Other Corp\", \"role\": \"Manager\", \"interest\": \"Cloud Architecture\", \"consent\": true}"
+  },
+  "register_missing_consent": {
+    "routeKey": "POST /register",
+    "body": "{\"name\": \"Test User\", \"email\": \"test@company.com\", \"company\": \"Test Corp\", \"role\": \"Tester\", \"interest\": \"Security\"}"
+  },
+  "register_invalid_email": {
+    "routeKey": "POST /register",
+    "body": "{\"name\": \"Test User\", \"email\": \"not-an-email\", \"company\": \"Test Corp\", \"role\": \"Tester\", \"interest\": \"Security\", \"consent\": true}"
+  },
+  "register_invalid_interest": {
+    "routeKey": "POST /register",
+    "body": "{\"name\": \"Test User\", \"email\": \"test@company.com\", \"company\": \"Test Corp\", \"role\": \"Tester\", \"interest\": \"Invalid Category\", \"consent\": true}"
+  },
+  "register_case_insensitive_interest": {
+    "routeKey": "POST /register",
+    "body": "{\"name\": \"Ana Silva\", \"email\": \"ana.silva@company.com\", \"company\": \"Tech Corp\", \"role\": \"DevOps Engineer\", \"interest\": \"devops & AUTOMATION\", \"consent\": true}"
+  },
+  "board_request": {
+    "routeKey": "GET /board"
+  }
+}

@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Kiro Live Board - Serverless event registration system with real-time dashboard
+  
+  SAM template for deploying Lambda function, DynamoDB table, API Gateway HTTP API,
+  S3 bucket for frontend hosting, and CloudFront distribution
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: python3.12
+
+Resources:
+  # DynamoDB Table for storing attendee registrations
+  AttendeesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: KiroLiveBoardAttendees
+      # Attribute definitions for primary key and GSI
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: gsiPK
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      # Primary key: email (partition key)
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      # Global Secondary Index for querying recent attendees by timestamp
+      GlobalSecondaryIndexes:
+        - IndexName: TimestampIndex
+          KeySchema:
+            - AttributeName: gsiPK
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      # On-demand billing for automatic scaling during event spikes
+      BillingMode: PAY_PER_REQUEST
+
+  # Lambda Function for handling registration and board data requests
+  RegistrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Description: Handles attendee registration and live board data aggregation
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref AttendeesTable
+          GSI_NAME: TimestampIndex
+      Policies:
+        # Grant DynamoDB permissions for the attendees table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AttendeesTable
+      Events:
+        # POST /register endpoint for attendee registration
+        RegisterPost:
+          Type: HttpApi
+          Properties:
+            Path: /register
+            Method: POST
+            ApiId: !Ref HttpApi
+        # GET /board endpoint for live dashboard data
+        BoardGet:
+          Type: HttpApi
+          Properties:
+            Path: /board
+            Method: GET
+            ApiId: !Ref HttpApi
+
+  # CloudWatch Logs Group for API Gateway access logs
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${AWS::StackName}-HttpApi"
+      RetentionInDays: 7
+
+  # HTTP API Gateway for REST interface
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Description: HTTP API for Kiro Live Board registration and dashboard
+      # CORS configuration to allow frontend requests
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+        MaxAge: 86400
+      # Access logging configuration
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '$context.requestId $context.error.message $context.error.messageString $context.httpMethod $context.routeKey $context.status $context.requestTime'
+
+  # S3 Bucket for hosting frontend static files
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-frontend-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+
+  # CloudFront Origin Access Identity for S3 access
+  CloudFrontOAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'OAI for ${AWS::StackName} Kiro Live Board'
+
+  # S3 Bucket Policy to allow CloudFront OAI access
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOAI.S3CanonicalUserId
+            Action: 's3:GetObject'
+            Resource: !Sub '${FrontendBucket.Arn}/*'
+
+  # CloudFront Distribution for frontend delivery
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub 'CloudFront distribution for ${AWS::StackName} Kiro Live Board'
+        DefaultRootObject: qr.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOAI}'
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+          MinTTL: 0
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        HttpVersion: http2
+
+Outputs:
+  # API Gateway endpoint URL for frontend integration
+  ApiUrl:
+    Description: HTTP API endpoint URL for registration and board endpoints
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  
+  # DynamoDB table name for reference
+  TableName:
+    Description: DynamoDB table name for attendees
+    Value: !Ref AttendeesTable
+  
+  # Lambda function ARN for debugging and monitoring
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt RegistrationFunction.Arn
+  
+  # CloudWatch Log Group for API access logs
+  ApiLogGroupName:
+    Description: CloudWatch Log Group for API Gateway access logs
+    Value: !Ref ApiLogGroup
+  
+  # S3 Bucket name for frontend files
+  FrontendBucketName:
+    Description: S3 bucket name for frontend static files
+    Value: !Ref FrontendBucket
+  
+  # CloudFront Distribution domain
+  CloudFrontDomain:
+    Description: CloudFront distribution domain name for accessing the frontend
+    Value: !GetAtt CloudFrontDistribution.DomainName
+  
+  # CloudFront Distribution URL
+  CloudFrontUrl:
+    Description: Full CloudFront URL for the application
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+  
+  # QR Code URL (for projection screen)
+  QrCodeUrl:
+    Description: URL to display QR code screen (project this)
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}/qr.html'
+  
+  # Registration Form URL (users scan QR to get here)
+  RegistrationUrl:
+    Description: URL for registration form (QR code points here)
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}/registration.html'
+  
+  # Dashboard URL (for organizer view)
+  DashboardUrl:
+    Description: URL for live dashboard with statistics
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}/board.html'

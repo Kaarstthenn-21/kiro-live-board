@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiro Live Board - Registro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0A1E2E 0%, #1A3A52 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #0A1E2E;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header .accent {
+            color: #00D9B4;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #0A1E2E;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: #e74c3c;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #00D9B4;
+            box-shadow: 0 0 0 3px rgba(0, 217, 180, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            background-color: white;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .checkbox-label {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #00D9B4;
+            color: #0A1E2E;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover:not(:disabled) {
+            background: #00C4A3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 217, 180, 0.3);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            color: #888;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00D9B4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            select,
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kiro <span class="accent">Live Board</span></h1>
+            <p>Registro al Evento</p>
+        </div>
+
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="name">Nombre Completo <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    placeholder="Ej: Juan Pérez García" 
+                    required
+                    autocomplete="name"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Corporativo <span class="required">*</span></label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="tu.email@empresa.com" 
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="company">Empresa <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="company" 
+                    name="company" 
+                    placeholder="Ej: Acme Corporation" 
+                    required
+                    autocomplete="organization"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="role">Rol / Cargo <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="role" 
+                    name="role" 
+                    placeholder="Ej: Desarrollador de Software" 
+                    required
+                    autocomplete="organization-title"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="interest">Área de Interés Principal <span class="required">*</span></label>
+                <select id="interest" name="interest" required>
+                    <option value="">Selecciona una opción...</option>
+                    <option value="AI & Machine Learning">AI & Machine Learning</option>
+                    <option value="Cloud Architecture">Cloud Architecture</option>
+                    <option value="DevOps & Automation">DevOps & Automation</option>
+                    <option value="Security">Security</option>
+                    <option value="Data Engineering">Data Engineering</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="consent" name="consent" required>
+                <label for="consent" class="checkbox-label">
+                    Acepto el tratamiento de mis datos personales para fines del evento y visualización en el tablero en vivo. <span class="required">*</span>
+                </label>
+            </div>
+
+            <button type="submit" id="submitBtn" disabled>
+                Registrarme
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        // Configuration - API URL is set during deployment
+        const API_URL = 'https://vzsrqh6h7e.execute-api.us-east-1.amazonaws.com';
+
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const loadingDiv = document.getElementById('loading');
+        
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const companyInput = document.getElementById('company');
+        const roleInput = document.getElementById('role');
+        const interestSelect = document.getElementById('interest');
+        const consentCheckbox = document.getElementById('consent');
+
+        // Validation function - enable submit only when all fields are filled and consent is checked
+        function validateForm() {
+            const isValid = 
+                nameInput.value.trim() !== '' &&
+                emailInput.value.trim() !== '' &&
+                companyInput.value.trim() !== '' &&
+                roleInput.value.trim() !== '' &&
+                interestSelect.value !== '' &&
+                consentCheckbox.checked;
+
+            submitBtn.disabled = !isValid;
+        }
+
+        // Add event listeners to all form inputs for real-time validation
+        nameInput.addEventListener('input', validateForm);
+        emailInput.addEventListener('input', validateForm);
+        companyInput.addEventListener('input', validateForm);
+        roleInput.addEventListener('input', validateForm);
+        interestSelect.addEventListener('change', validateForm);
+        consentCheckbox.addEventListener('change', validateForm);
+
+        // Form submission handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Hide any previous messages
+            messageDiv.style.display = 'none';
+            messageDiv.className = 'message';
+
+            // Show loading spinner
+            loadingDiv.classList.add('show');
+            submitBtn.disabled = true;
+
+            // Collect form data
+            const formData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim().toLowerCase(),
+                company: companyInput.value.trim(),
+                role: roleInput.value.trim(),
+                interest: interestSelect.value,
+                consent: consentCheckbox.checked
+            };
+
+            try {
+                // Send POST request to registration endpoint
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                // Hide loading spinner
+                loadingDiv.classList.remove('show');
+
+                // Handle different response status codes
+                if (response.status === 200) {
+                    // Success - redirect to board after 2 seconds
+                    messageDiv.textContent = 'Registro exitoso! Redirigiendo al tablero...';
+                    messageDiv.classList.add('success');
+                    messageDiv.style.display = 'block';
+
+                    // Clear the form
+                    form.reset();
+                    submitBtn.disabled = true;
+
+                    // Redirect to board.html after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = './board.html';
+                    }, 2000);
+
+                } else if (response.status === 409) {
+                    // Duplicate email - redirect to board
+                    messageDiv.textContent = 'Ya estás registrado. Redirigiendo al tablero...';
+                    messageDiv.classList.add('info');
+                    messageDiv.style.display = 'block';
+
+                    // Redirect to board.html after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = './board.html';
+                    }, 2000);
+
+                } else if (response.status === 400) {
+                    // Bad request - display error message
+                    messageDiv.textContent = `Error en los datos: ${data.message || 'Por favor verifica todos los campos.'}`;
+                    messageDiv.classList.add('error');
+                    messageDiv.style.display = 'block';
+                    validateForm(); // Re-enable button if form is still valid
+
+                } else if (response.status === 500) {
+                    // Server error
+                    messageDiv.textContent = 'Error del servidor. Por favor intenta nuevamente en unos momentos.';
+                    messageDiv.classList.add('error');
+                    messageDiv.style.display = 'block';
+                    validateForm();
+
+                } else {
+                    // Other errors
+                    messageDiv.textContent = `Error inesperado (${response.status}). Por favor intenta nuevamente.`;
+                    messageDiv.classList.add('error');
+                    messageDiv.style.display = 'block';
+                    validateForm();
+                }
+
+            } catch (error) {
+                // Network or other errors
+                console.error('Registration error:', error);
+                loadingDiv.classList.remove('show');
+                
+                messageDiv.textContent = 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.';
+                messageDiv.classList.add('error');
+                messageDiv.style.display = 'block';
+                validateForm();
+            }
+        });
+
+        // Initial validation check on page load
+        validateForm();
+    </script>
+</body>
+</html>

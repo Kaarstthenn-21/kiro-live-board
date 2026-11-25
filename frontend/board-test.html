@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiro Live Board - Test Page</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        h2 { color: #333; margin-top: 0; }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px 10px 0;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Kiro Live Board - Página de Pruebas</h1>
+    
+    <div class="test-section">
+        <h2>Checklist de Implementación</h2>
+        <ul>
+            <li>✅ Creado board.html con secciones para conteo total, gráficos de interés y lista de asistentes recientes</li>
+            <li>✅ Implementada solicitud GET al endpoint /board al cargar la página</li>
+            <li>✅ Implementado polling automático cada 3 segundos usando setInterval</li>
+            <li>✅ Renderizado prominente del conteo total de asistentes</li>
+            <li>✅ Renderizado de gráficos de barras horizontales para distribución de intereses usando Chart.js</li>
+            <li>✅ Renderizado de lista de 12 asistentes más recientes mostrando solo firstName y company (sin emails)</li>
+            <li>✅ Manejo de estado vacío con mensaje "No hay registros aún"</li>
+            <li>✅ Estilos CSS para diseño del dashboard y gráficos</li>
+            <li>✅ Verificación de que los emails nunca aparecen en los datos mostrados</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Instrucciones de Configuración</h2>
+        <ol>
+            <li>Despliega el backend usando SAM:
+                <pre>sam build
+sam deploy --guided</pre>
+            </li>
+            <li>Copia la URL de API Gateway de los outputs de SAM</li>
+            <li>Abre <code>board.html</code> y reemplaza <code>YOUR_API_GATEWAY_URL_HERE</code> con tu URL</li>
+            <li>Sirve los archivos HTML usando un servidor HTTP local o ábrelos directamente en el navegador</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Prueba de Mock Data</h2>
+        <p>Haz clic en el botón para probar el renderizado con datos simulados:</p>
+        <button onclick="openBoardWithMockData()">Abrir Board con Datos Mock</button>
+        <button onclick="openBoardEmpty()">Abrir Board Vacío</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Formato Esperado de la Respuesta de la API</h2>
+        <pre>{
+  "totalCount": 47,
+  "interestBreakdown": [
+    {"interest": "AI & Machine Learning", "count": 15},
+    {"interest": "Cloud Architecture", "count": 12},
+    {"interest": "DevOps & Automation", "count": 10},
+    {"interest": "Security", "count": 5},
+    {"interest": "Data Engineering", "count": 3},
+    {"interest": "Other", "count": 2}
+  ],
+  "recentAttendees": [
+    {"firstName": "Juan", "company": "Company A", "timestamp": "2025-01-15T10:30:45Z"},
+    {"firstName": "María", "company": "Company B", "timestamp": "2025-01-15T10:30:12Z"}
+  ]
+}</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Validación de Requisitos</h2>
+        <ul>
+            <li>✅ <strong>Req 3.1</strong>: Panel accesible en URL /board</li>
+            <li>✅ <strong>Req 3.2</strong>: Muestra el total de asistentes registrados</li>
+            <li>✅ <strong>Req 3.3</strong>: Muestra gráficos de barras agrupados por interés</li>
+            <li>✅ <strong>Req 3.4</strong>: Muestra 12 registros más recientes (solo nombre y empresa)</li>
+            <li>✅ <strong>Req 3.5</strong>: Actualización automática cada 3 segundos</li>
+            <li>✅ <strong>Req 3.6</strong>: NO muestra correos electrónicos corporativos</li>
+            <li>✅ <strong>Req 3.7</strong>: Maneja estado vacío (cero asistentes)</li>
+        </ul>
+    </div>
+
+    <script>
+        // Mock data generator
+        function generateMockBoardData() {
+            return {
+                totalCount: 47,
+                interestBreakdown: [
+                    {interest: "AI & Machine Learning", count: 15},
+                    {interest: "Cloud Architecture", count: 12},
+                    {interest: "DevOps & Automation", count: 10},
+                    {interest: "Security", count: 5},
+                    {interest: "Data Engineering", count: 3},
+                    {interest: "Other", count: 2}
+                ],
+                recentAttendees: [
+                    {firstName: "Juan", company: "Acme Corp", timestamp: "2025-01-15T10:30:45Z"},
+                    {firstName: "María", company: "Tech Solutions", timestamp: "2025-01-15T10:30:12Z"},
+                    {firstName: "Carlos", company: "Innovation Labs", timestamp: "2025-01-15T10:29:55Z"},
+                    {firstName: "Ana", company: "Digital Systems", timestamp: "2025-01-15T10:29:30Z"},
+                    {firstName: "Luis", company: "Cloud Services", timestamp: "2025-01-15T10:28:45Z"},
+                    {firstName: "Sofia", company: "Data Analytics", timestamp: "2025-01-15T10:28:20Z"},
+                    {firstName: "Miguel", company: "Security First", timestamp: "2025-01-15T10:27:55Z"},
+                    {firstName: "Laura", company: "DevOps Pro", timestamp: "2025-01-15T10:27:30Z"},
+                    {firstName: "Pedro", company: "AI Research", timestamp: "2025-01-15T10:26:45Z"},
+                    {firstName: "Carmen", company: "Tech Innovators", timestamp: "2025-01-15T10:26:12Z"},
+                    {firstName: "David", company: "Cloud Masters", timestamp: "2025-01-15T10:25:50Z"},
+                    {firstName: "Isabel", company: "Data Experts", timestamp: "2025-01-15T10:25:20Z"}
+                ]
+            };
+        }
+
+        function generateEmptyBoardData() {
+            return {
+                totalCount: 0,
+                interestBreakdown: [],
+                recentAttendees: []
+            };
+        }
+
+        function openBoardWithMockData() {
+            const mockData = generateMockBoardData();
+            const dataUrl = 'data:application/json;base64,' + btoa(JSON.stringify(mockData));
+            window.open('board.html?mock=true&data=' + encodeURIComponent(dataUrl), '_blank');
+            alert('Para usar datos mock, necesitarás modificar board.html temporalmente para interceptar el fetch.\n\nAlternativamente, usa un servidor mock o las herramientas de desarrollo del navegador para interceptar requests.');
+        }
+
+        function openBoardEmpty() {
+            window.open('board.html', '_blank');
+        }
+    </script>
+</body>
+</html>

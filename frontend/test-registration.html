@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Kiro Live Board Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #fff3e0;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Kiro Live Board - Registration Form Test Page</h1>
+
+    <div class="test-panel">
+        <h2>📋 Manual Test Checklist</h2>
+        <div class="info">
+            <strong>Instructions:</strong> Use the form below to verify all requirements are met. Check each item as you test.
+        </div>
+        
+        <h3>Form Validation Tests</h3>
+        <ul class="checklist">
+            <li>Submit button is disabled on initial page load</li>
+            <li>Submit button remains disabled when consent checkbox is unchecked</li>
+            <li>Submit button remains disabled if any required field is empty</li>
+            <li>Submit button enables only when ALL fields are filled AND consent is checked</li>
+            <li>Email field validates email format (browser validation)</li>
+        </ul>
+
+        <h3>Field Presence Tests (Requirement 1.1, 8.1, 8.2)</h3>
+        <ul class="checklist">
+            <li>Name field is present (text input)</li>
+            <li>Email field is present (email input type)</li>
+            <li>Company field is present (text input)</li>
+            <li>Role field is present (text input)</li>
+            <li>Interest field is present (dropdown/select)</li>
+            <li>Interest dropdown contains "AI & Machine Learning" option</li>
+            <li>Interest dropdown contains "Cloud Architecture" option</li>
+            <li>Interest dropdown contains "DevOps & Automation" option</li>
+            <li>Interest dropdown contains "Security" option</li>
+            <li>Interest dropdown contains "Data Engineering" option</li>
+            <li>Interest dropdown contains "Other" option</li>
+            <li>Consent checkbox is present (Requirement 1.2)</li>
+        </ul>
+
+        <h3>API Integration Tests (Requires Backend Deployment)</h3>
+        <div class="warning">
+            <strong>⚠️ Note:</strong> These tests require the API Gateway URL to be configured in <code>registration.html</code>. 
+            Replace <code>YOUR_API_GATEWAY_URL_HERE</code> with your actual API endpoint after deployment.
+        </div>
+        <ul class="checklist">
+            <li>Form submits POST request to /register endpoint (Requirement 1.5)</li>
+            <li>Success message displays on 200 response (Requirement 1.6)</li>
+            <li>Form clears after successful submission</li>
+            <li>"Already registered" message displays on 409 response (Requirement 1.7)</li>
+            <li>Error message displays on 400 response</li>
+            <li>Error message displays on 500 response</li>
+            <li>Network error message displays when API is unreachable</li>
+        </ul>
+
+        <h3>Mobile Responsiveness Tests</h3>
+        <ul class="checklist">
+            <li>Form displays correctly at 320px width (use browser dev tools)</li>
+            <li>Form displays correctly at 375px width (iPhone)</li>
+            <li>Form displays correctly at 480px width (larger phones)</li>
+            <li>All input fields are easily tappable on mobile</li>
+            <li>Text is readable without zooming</li>
+        </ul>
+
+        <h3>UX/Accessibility Tests</h3>
+        <ul class="checklist">
+            <li>All fields have visible labels</li>
+            <li>Required fields are marked with asterisk (*)</li>
+            <li>Form can be completed using keyboard only (Tab navigation)</li>
+            <li>Focus states are visible on all interactive elements</li>
+            <li>Loading spinner appears during form submission</li>
+        </ul>
+    </div>
+
+    <div class="test-panel">
+        <h2>🎯 Live Form Preview</h2>
+        <div class="info">
+            <strong>Tip:</strong> Open browser DevTools (F12) and switch to mobile view to test responsive design.
+        </div>
+        <iframe src="registration.html" title="Registration Form Preview"></iframe>
+    </div>
+
+    <div class="test-panel">
+        <h2>📝 Test Data Examples</h2>
+        <p>Use these test data examples for manual testing:</p>
+        
+        <h3>Valid Registration 1:</h3>
+        <ul>
+            <li><strong>Name:</strong> Juan Pérez García</li>
+            <li><strong>Email:</strong> juan.perez@empresa.com</li>
+            <li><strong>Company:</strong> Tech Solutions Inc</li>
+            <li><strong>Role:</strong> Software Engineer</li>
+            <li><strong>Interest:</strong> AI & Machine Learning</li>
+            <li><strong>Consent:</strong> ✓</li>
+        </ul>
+
+        <h3>Valid Registration 2:</h3>
+        <ul>
+            <li><strong>Name:</strong> María López</li>
+            <li><strong>Email:</strong> maria.lopez@company.com</li>
+            <li><strong>Company:</strong> Cloud Innovations</li>
+            <li><strong>Role:</strong> DevOps Engineer</li>
+            <li><strong>Interest:</strong> DevOps & Automation</li>
+            <li><strong>Consent:</strong> ✓</li>
+        </ul>
+
+        <h3>Test Duplicate Email:</h3>
+        <p>Submit the same email twice to verify duplicate detection (409 response).</p>
+
+        <h3>Test Invalid Email:</h3>
+        <ul>
+            <li>invalid-email (should be caught by browser validation)</li>
+            <li>@empresa.com (should be caught by browser validation)</li>
+            <li>user@.com (should be caught by browser validation)</li>
+        </ul>
+    </div>
+
+    <div class="test-panel">
+        <h2>🔧 Configuration Instructions</h2>
+        <div class="warning">
+            <strong>Before testing API integration:</strong>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li>Deploy the SAM template: <code>sam build && sam deploy --guided</code></li>
+                <li>Copy the API Gateway URL from the deployment outputs</li>
+                <li>Open <code>registration.html</code> in a text editor</li>
+                <li>Find the line: <code>const API_URL = 'YOUR_API_GATEWAY_URL_HERE';</code></li>
+                <li>Replace with: <code>const API_URL = 'https://your-api-id.execute-api.region.amazonaws.com';</code></li>
+                <li>Save and reload this test page</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-panel">
+        <h2>✅ Requirements Validation</h2>
+        <p>This form implementation validates the following requirements:</p>
+        <ul>
+            <li><strong>Requirement 1.1:</strong> Displays all required form fields ✓</li>
+            <li><strong>Requirement 1.2:</strong> Displays mandatory consent checkbox ✓</li>
+            <li><strong>Requirement 1.3:</strong> Prevents submission when consent unchecked ✓</li>
+            <li><strong>Requirement 1.4:</strong> Enables submit when all fields filled ✓</li>
+            <li><strong>Requirement 1.5:</strong> Sends registration data to API ✓</li>
+            <li><strong>Requirement 1.6:</strong> Displays success message on 200 ✓</li>
+            <li><strong>Requirement 1.7:</strong> Displays duplicate message on 409 ✓</li>
+            <li><strong>Requirement 1.8:</strong> Results in board appearance (requires backend) ⏳</li>
+            <li><strong>Requirement 8.1:</strong> Provides interest dropdown ✓</li>
+            <li><strong>Requirement 8.2:</strong> Includes predefined interest options ✓</li>
+        </ul>
+    </div>
+</body>
+</html>

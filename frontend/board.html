@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiro Live Board - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0A1E2E;
+            color: #FFFFFF;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 56px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+
+        .header .accent {
+            color: #00D9B4;
+        }
+
+        .header p {
+            font-size: 20px;
+            color: #FFFFFF;
+            opacity: 0.7;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: #1A3A52;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .total-count {
+            text-align: center;
+        }
+
+        .total-count h2 {
+            font-size: 18px;
+            color: #00D9B4;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .total-count .number {
+            font-size: 96px;
+            font-weight: 700;
+            color: #FFFFFF;
+            line-height: 1;
+        }
+
+        .interest-chart h2 {
+            font-size: 18px;
+            color: #00D9B4;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .recent-attendees {
+            background: #1A3A52;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .recent-attendees h2 {
+            font-size: 18px;
+            color: #00D9B4;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .attendees-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .attendee-card {
+            background: #0A1E2E;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #00D9B4;
+        }
+
+        .attendee-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+
+        .attendee-company {
+            font-size: 14px;
+            color: #FFFFFF;
+            opacity: 0.6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #FFFFFF;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #1A3A52;
+            border-top: 4px solid #00D9B4;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .last-updated {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #FFFFFF;
+            opacity: 0.4;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 42px;
+            }
+
+            .total-count .number {
+                font-size: 72px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .card, .recent-attendees {
+                padding: 30px 20px;
+            }
+
+            .attendees-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Cargando datos...</p>
+    </div>
+
+    <div class="container" id="dashboard" style="display: none;">
+        <div class="header">
+            <h1>Kiro <span class="accent">Live Board</span></h1>
+            <p>Dashboard en Tiempo Real</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card total-count">
+                <h2>Total Registrados</h2>
+                <div class="number" id="totalCount">0</div>
+            </div>
+
+            <div class="card interest-chart">
+                <h2>Intereses Principales</h2>
+                <canvas id="interestChart"></canvas>
+            </div>
+        </div>
+
+        <div class="recent-attendees">
+            <h2>Últimos Registrados</h2>
+            <div class="attendees-list" id="attendeesList">
+                <!-- Attendees will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div class="last-updated" id="lastUpdated"></div>
+    </div>
+
+    <script>
+        // Configuration - API URL is set during deployment
+        const API_BASE_URL = 'https://vzsrqh6h7e.execute-api.us-east-1.amazonaws.com';
+        const BOARD_ENDPOINT = `${API_BASE_URL}/board`;
+        const REFRESH_INTERVAL = 3000; // 3 seconds
+
+        let interestChart = null;
+        let refreshTimer = null;
+
+        // Initialize the dashboard
+        async function initDashboard() {
+            await fetchBoardData();
+            startAutoRefresh();
+        }
+
+        // Fetch board data from API
+        async function fetchBoardData() {
+            try {
+                const response = await fetch(BOARD_ENDPOINT);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderDashboard(data);
+                updateLastUpdatedTime();
+                
+                // Hide loading, show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } catch (error) {
+                console.error('Error fetching board data:', error);
+                // Show error state but keep trying
+                if (document.getElementById('dashboard').style.display === 'none') {
+                    document.getElementById('loading').innerHTML = `
+                        <div class="spinner"></div>
+                        <p>Error conectando con el servidor. Reintentando...</p>
+                    `;
+                }
+            }
+        }
+
+        // Render dashboard with fetched data
+        function renderDashboard(data) {
+            // Update total count
+            document.getElementById('totalCount').textContent = data.totalCount || 0;
+
+            // Update interest chart
+            renderInterestChart(data.interestBreakdown || []);
+
+            // Update recent attendees list
+            renderRecentAttendees(data.recentAttendees || []);
+        }
+
+        // Render interest breakdown chart
+        function renderInterestChart(interestBreakdown) {
+            const ctx = document.getElementById('interestChart').getContext('2d');
+
+            // Destroy previous chart if exists
+            if (interestChart) {
+                interestChart.destroy();
+            }
+
+            // Handle empty state
+            if (interestBreakdown.length === 0) {
+                // Show empty message on canvas
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('No hay datos disponibles', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            // Create horizontal bar chart
+            interestChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: interestBreakdown.map(item => item.interest),
+                    datasets: [{
+                        label: 'Asistentes',
+                        data: interestBreakdown.map(item => item.count),
+                        backgroundColor: '#00D9B4',
+                        borderColor: '#00C4A3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                color: '#FFFFFF'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#FFFFFF',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render recent attendees list
+        function renderRecentAttendees(recentAttendees) {
+            const attendeesList = document.getElementById('attendeesList');
+
+            // Handle empty state
+            if (recentAttendees.length === 0) {
+                attendeesList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No hay registros recientes</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Verify no emails are present (privacy check)
+            const hasEmails = recentAttendees.some(attendee => 
+                attendee.email || (attendee.firstName && attendee.firstName.includes('@'))
+            );
+
+            if (hasEmails) {
+                console.error('PRIVACY VIOLATION: Email addresses detected in board data!');
+            }
+
+            // Render attendee cards
+            attendeesList.innerHTML = recentAttendees.map(attendee => `
+                <div class="attendee-card">
+                    <div class="attendee-name">${escapeHtml(attendee.firstName)}</div>
+                    <div class="attendee-company">${escapeHtml(attendee.company)}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update last updated timestamp
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('lastUpdated').textContent = `Última actualización: ${timeString}`;
+        }
+
+        // Start auto-refresh timer
+        function startAutoRefresh() {
+            // Clear existing timer if any
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+
+            // Set up new refresh timer
+            refreshTimer = setInterval(fetchBoardData, REFRESH_INTERVAL);
+
+            // Pause refresh when page is hidden (saves bandwidth)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (refreshTimer) {
+                        clearInterval(refreshTimer);
+                        refreshTimer = null;
+                    }
+                } else {
+                    fetchBoardData();
+                    refreshTimer = setInterval(fetchBoardData, REFRESH_INTERVAL);
+                }
+            });
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize dashboard on page load
+        initDashboard();
+    </script>
+</body>
+</html>
